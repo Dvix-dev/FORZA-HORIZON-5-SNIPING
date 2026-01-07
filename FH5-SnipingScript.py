@@ -1,88 +1,93 @@
-# Imports for keyboard inputs, timed delays and a custom function
 import keyboard
 import time
 import os
+import sys
+import win32gui
 
-# Function to clear the terminal
+# ================= CONFIG =================
+VENTANA_PERMITIDA = "Forza Horizon 5"
+running = True
+# ==========================================
+
 def clear():
-    command = 'cls'
-    os.system(command)
+    os.system('cls')
+
+def ventana_activa_es_fh5():
+    hwnd = win32gui.GetForegroundWindow()
+    titulo = win32gui.GetWindowText(hwnd)
+    return VENTANA_PERMITIDA.lower() in titulo.lower()
+
+def stop_script():
+    global running
+    running = False
+    clear()
+    print(f"Script detenido por seguridad.")
+    sys.exit()
+
+# ESC para detener todo
+keyboard.add_hotkey('esc', stop_script)
 
 clear()
-timer = (0.0) # Seconds
-counter = 0 # Times sniped
+timer = 0.0
+counter = 0
 start = 1
-# This will initiate the script
+
 if start == 1:
-    while True:
-        # Prints the explanation for using the script
+    while running:
         clear()
         print(' ----------------------------------------------------------------------')
-        print('|                     Python FH5 Sniping Script                        |')
+        print('|         Python FH5 Sniping Script (Dvix-Dev FORK 🍴)                 |')
         print('|                                                                      |')
-        print('|   1- First select the car you want and the potential max buyout      |')
-        print('|   2- Make sure to focus the FH5 window when the countdown starts     |')
-        print('|   3- Second monitor highly recommended because when you want to      |')
-        print('|      close the script you have to just force close the window        |')
-        print('|      (Put the game in windowed mode and put the script over it       |')
-        print('|       if you don\'t have a second monitor)                            |')
-        print('|   4- It will start counting down from 5 once you start the script.   |')
-        print('|      \'y\' = yes | \'n\' = no                                            |')
+        print('|   1- Deja preparado el coche seleccionado con el maximo precio       |')
+        print('|   2- Ten la ventana de forza focuseada en los 5 segundos             |')
+        print('|   3- Presiona ESC en cualquier momento para detener                  |')
         print('|                                                                      |')
-        print('|      GOOD LUCK SNIPING!                                              |')
+        print('|      Buena suerte!                                                   |')
         print(' ----------------------------------------------------------------------')
-        # Asks if user wants to start sniping 
-        a = str(input('\nDo you want to start the script? y/n: '))
-        # If user input equals 'n' it will close the program immediately
+
+        a = input('\nEmpezar el Script? s/n: ').lower()
+
         if a == 'n':
-            break
-        # If user input from -a- equals 'y' it will start counting down from 5 and will start sniping
-        elif a == 'y':
+            stop_script()
+
+        elif a == 's':
             clear()
-            for i in range(5, -1, -1):        
-                print('!!FOCUS WINDOW!!\nSniping in: ')        
-                print(str(i) + ' seconds')                
+            for i in range(5, -1, -1):
+                if not ventana_activa_es_fh5():
+                    stop_script()
+
+                print('FOCUS A LA VENTANA!!\nSnipeando en:')
+                print(f'{i} segundos')
                 time.sleep(1)
                 clear()
-            # The keyboard inputs and timings
-            while True:
-                counter = counter + 1
-                timer = timer + (2.33)
-                minuteCounter = timer / 60
-                clear()                                
-                print('Intentos: ' + str(counter) + ' veces')  
-                print(str(round(timer, 1)) + ' segundos (' + str(round(minuteCounter, 1)) + ' minutos)')                              
-                keyboard.press_and_release('Enter')
-                # *
-                time.sleep(0.25)
-                keyboard.press_and_release('Enter')
-                # *
-                time.sleep(0.78)
-                keyboard.press_and_release('y')                
-                time.sleep(0.25)      
-                keyboard.press_and_release('down')                
-                time.sleep(0.1)
-                keyboard.press_and_release('Enter')
-                # *
-                time.sleep(0.2)    
-                keyboard.press_and_release('Enter')                   
-                keyboard.press_and_release('Escape') 
-                time.sleep(0.75) 
-                  
-        # If input from -a- doesn't equal 'y' or 'n' it will start a loop where the user will be asked to restart or exit the program                                    
-        else:            
-            while True:
-                clear()
-                # Asks user for input to restart or exit the program
-                restart = input('You didn\'t press \'y\' to start the script, do you want to restart? y/n : ')
-                # If user input from -restart- 'y' it will go loop back to -a-
-                if restart == 'y':
-                    break 
-                # If input from -restart- equals 'n' it will close the program
-                elif restart == 'n':
-                    exit() 
-                # If the user does not input 'y' or 'n' it will loop back to -restart-          
-                else:
-                    continue
 
-clear()    
+            # Loop principal de sniping
+            while running:
+                # Comprobar foco ANTES de enviar inputs
+                if not ventana_activa_es_fh5():
+                    stop_script()
+
+                counter += 1
+                timer += 2.33
+                minuteCounter = timer / 60
+
+                clear()
+                print(f'Intentos: {counter} veces')
+                print(f'{round(timer, 1)} segundos ({round(minuteCounter, 1)} minutos)')
+
+                keyboard.press_and_release('enter')
+                time.sleep(0.25)
+                keyboard.press_and_release('enter')
+                time.sleep(0.78)
+                keyboard.press_and_release('y')
+                time.sleep(0.25)
+                keyboard.press_and_release('down')
+                time.sleep(0.1)
+                keyboard.press_and_release('enter')
+                time.sleep(0.2)
+                keyboard.press_and_release('enter')
+                keyboard.press_and_release('esc')
+                time.sleep(0.75)
+
+        else:
+            continue
